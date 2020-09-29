@@ -2,4 +2,5 @@
     <string name="app_name">Bizup Assignment</string>
     <string name="what_s_on_your_mind">What\'s on your mind?</string>
     <string name="change_background">Change Background</string>
+    <string name="Permission_not_given">Permission not given</string>
 </resources>

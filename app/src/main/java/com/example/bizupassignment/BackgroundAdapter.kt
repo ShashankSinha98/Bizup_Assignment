@@ -7,8 +7,12 @@ import android.widget.ImageView
 import androidx.cardview.widget.CardView
 import androidx.recyclerview.widget.RecyclerView
 
-class BackgroundAdapter(private val listItem: Array<Int>, private var current: Int, val btnClickListener: BtnClickListener):
-        RecyclerView.Adapter<BackgroundAdapter.MyViewHolder>(){
+class BackgroundAdapter(
+    private val listItem: Array<Int>,
+    private var current: Int,
+    val btnClickListener: BtnClickListener
+) :
+    RecyclerView.Adapter<BackgroundAdapter.MyViewHolder>() {
 
     companion object {
         var mClickListener: BtnClickListener? = null
@@ -30,7 +34,7 @@ class BackgroundAdapter(private val listItem: Array<Int>, private var current: I
         mClickListener = btnClickListener
         var params = holder.card.layoutParams as ViewGroup.MarginLayoutParams
 
-        if(listItem.get(position) == current){
+        if (listItem.get(position) == current) {
             params.setMargins(10, 10, 10, 10)
         } else {
             params.setMargins(0, 0, 0, 0)
@@ -39,9 +43,9 @@ class BackgroundAdapter(private val listItem: Array<Int>, private var current: I
         holder.card.requestLayout()
         holder.card_image.setImageResource(listItem.get(position))
 
-        holder.card.setOnClickListener(object : View.OnClickListener{
+        holder.card.setOnClickListener(object : View.OnClickListener {
             override fun onClick(p0: View?) {
-                if(mClickListener != null && listItem[position] != current){
+                if (mClickListener != null && listItem[position] != current) {
                     current = listItem[position]
                     notifyDataSetChanged()
                     mClickListener?.onBtnClick(position)

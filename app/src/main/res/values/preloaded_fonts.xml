@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <array name="preloaded_fonts" translatable="false">
+        <item>@font/font1</item>
+        <item>@font/font2</item>
+        <item>@font/font5</item>
+        <item>@font/font3</item>
+        <item>@font/font4</item>
+    </array>
+</resources>
