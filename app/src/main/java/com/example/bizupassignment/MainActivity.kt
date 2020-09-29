@@ -1,57 +1,51 @@
 package com.example.bizupassignment
 
+import android.app.Activity
 import android.content.Context
 import android.content.Intent
-import android.content.res.Resources
-import android.graphics.*
+import android.content.pm.PackageManager
+import android.graphics.Bitmap
+import android.graphics.Canvas
+import android.graphics.Color
+import android.graphics.Typeface
 import android.os.Bundle
-import android.util.Log
-import android.view.*
+import android.os.Handler
+import android.view.View
 import android.view.inputmethod.InputMethodManager
-import android.widget.EditText
-import android.widget.ImageView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
+import androidx.core.content.res.ResourcesCompat
+import androidx.core.graphics.drawable.DrawableCompat
 import androidx.databinding.DataBindingUtil
 import androidx.recyclerview.widget.DefaultItemAnimator
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import com.example.bizupassignment.databinding.ActivityMainBinding
-import kotlinx.android.synthetic.main.activity_main.*
 import timber.log.Timber
 import java.io.File
-import java.io.FileNotFoundException
 import java.io.FileOutputStream
 import java.io.IOException
-import java.lang.Exception
 
-
+const val PROCESS_WAIT : Long = 300
+const val STORAGE_REQUEST_CODE = 100
 class MainActivity : AppCompatActivity() {
 
     lateinit var binding: ActivityMainBinding
-
     private var listVisible = false
+    private var colorPos = 0
+    private var fontPos = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        binding = DataBindingUtil.setContentView(this, R.layout.activity_main)
-        val recyclerView = background_list
 
+        val permissions : Array<String> = arrayOf(android.Manifest.permission.READ_EXTERNAL_STORAGE,android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
+        ActivityCompat.requestPermissions(this,permissions, STORAGE_REQUEST_CODE)
 
-        binding.changeBackground.setOnClickListener {
-            if (!listVisible) {
-                recyclerView.visibility = View.VISIBLE
-                listVisible = true
-            } else {
-                recyclerView.visibility = View.GONE
-                listVisible = false
-            }
-        }
-
-
+        val colors = arrayOf(R.color.white,R.color.red,R.color.colorAccent,R.color.dark_green,R.color.yellow,R.color.violet,R.color.green,R.color.pink,R.color.orange)
         val list = arrayOf(
             R.drawable.bg1,
             R.drawable.bg2,
@@ -64,6 +58,46 @@ class MainActivity : AppCompatActivity() {
             R.drawable.bg9,
             R.drawable.bg10
         )
+        val fonts = arrayOf(R.font.font1,R.font.font2,R.font.font3,R.font.font4,R.font.font5)
+
+
+
+        binding = DataBindingUtil.setContentView(this, R.layout.activity_main)
+
+        binding.changeColorIcon.setOnClickListener {
+            colorPos+=1
+            val colorSelected = colors[colorPos%colors.size]
+
+           binding.apply {
+               textEt.setTextColor(resources.getColor(colorSelected))
+               statusTv.setTextColor(resources.getColor(colorSelected))
+               notifyChange()
+           }
+            DrawableCompat.setTint(binding.changeColorIcon.getDrawable(), ContextCompat.getColor(this,colorSelected));
+        }
+
+        binding.changeBackground.setOnClickListener {
+            if (!listVisible) {
+                binding.backgroundList.visibility = View.VISIBLE
+                listVisible = true
+            } else {
+                binding.backgroundList.visibility = View.GONE
+                listVisible = false
+            }
+        }
+
+        binding.changeFontIcon.setOnClickListener {
+                fontPos+=1
+                val fontSelected = fonts[fontPos%fonts.size]
+                val typeface  = ResourcesCompat.getFont(this,fontSelected)
+
+                binding.apply {
+                    textEt.setTypeface(typeface)
+                    statusTv.setTypeface(typeface)
+                    notifyChange()
+                }
+        }
+
 
         var adapter =
             BackgroundAdapter(list, R.drawable.bg1, object : BackgroundAdapter.BtnClickListener {
@@ -72,33 +106,71 @@ class MainActivity : AppCompatActivity() {
                 }
             })
 
-        val mLayoutManager = LinearLayoutManager(applicationContext)
-        mLayoutManager.orientation = LinearLayoutManager.HORIZONTAL
-        recyclerView.layoutManager = mLayoutManager
-        recyclerView.itemAnimator = DefaultItemAnimator()
-        recyclerView.adapter = adapter
-        adapter.notifyDataSetChanged()
+        setUpRecyclerView(adapter)
 
 
 
         binding.shareBtn.setOnClickListener {
-            //generateImage()
-            binding.backgroundList.visibility = View.GONE
-            listVisible = false
-            binding.changeBackground.visibility = View.INVISIBLE
-            binding.textEt.isCursorVisible = false
-            generateScreenShot(binding.relativeLayout)
+
+            // Checking for permissions
+            if(hasPermissions(this,permissions)) {
+
+                listVisible = false
+                binding.apply {
+                    backgroundList.visibility = View.GONE
+                    changeBackground.visibility = View.INVISIBLE
+                    textEt.visibility = View.INVISIBLE
+                    statusTv.visibility = View.VISIBLE
+                    statusTv.text = binding.textEt.text?.toString()
+                    changeColorIcon.visibility = View.INVISIBLE
+                    changeFontIcon.visibility = View.INVISIBLE
+                    invalidateAll()
+                }
+                hideKeyboard(it)
+
+                val handler = Handler()
+                handler.postDelayed(Runnable {
+                    // Hide keyboard
+                    generateImage(binding.relativeLayout)
+                }, PROCESS_WAIT)
+            } else {
+                Toast.makeText(this,getString(R.string.Permission_not_given),Toast.LENGTH_SHORT).show()
+                ActivityCompat.requestPermissions(this,permissions, STORAGE_REQUEST_CODE)
+            }
+
         }
     }
 
+    fun hasPermissions(context: Context,  permissions: Array<String>): Boolean = permissions.all {
+        ActivityCompat.checkSelfPermission(context, it) == PackageManager.PERMISSION_GRANTED
+    }
 
 
+    private fun setUpRecyclerView(adapter : BackgroundAdapter) {
+        val mLayoutManager = LinearLayoutManager(applicationContext)
+        mLayoutManager.orientation = LinearLayoutManager.HORIZONTAL
 
-    private fun generateScreenShot(view: View) {
+        binding.apply {
+            backgroundList.layoutManager = mLayoutManager
+            backgroundList.itemAnimator = DefaultItemAnimator()
+            backgroundList.adapter = adapter
+            adapter.notifyDataSetChanged()
+        }
+    }
 
-        // Hide keyboard
-        val inm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-        inm.hideSoftInputFromWindow(view.windowToken, 0)
+    fun Context.hideKeyboard(view: View) {
+        val inputMethodManager = getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager
+        inputMethodManager.hideSoftInputFromWindow(view.windowToken, 0)
+    }
+
+
+    override fun onDestroy() {
+        super.onDestroy()
+        DrawableCompat.setTint(binding.changeColorIcon.getDrawable(), ContextCompat.getColor(this,R.color.white));
+    }
+
+    private fun generateImage(view: View) {
+
 
         binding.shareBtn.visibility = View.GONE
 
@@ -121,12 +193,29 @@ class MainActivity : AppCompatActivity() {
             Timber.i(e.message.toString())
         }
 
-        binding.shareBtn.visibility = View.VISIBLE
-        binding.changeBackground.visibility = View.INVISIBLE
-        binding.textEt.isCursorVisible = true
+        binding.apply {
+            shareBtn.visibility = View.VISIBLE
+            changeBackground.visibility = View.VISIBLE
+            textEt.visibility = View.VISIBLE
+            statusTv.visibility = View.INVISIBLE
+            changeColorIcon.visibility = View.VISIBLE
+            changeFontIcon.visibility = View.VISIBLE
+        }
+
 
     }
 
+    override fun onRestart() {
+        super.onRestart()
+        binding.apply {
+            shareBtn.visibility = View.VISIBLE
+            changeBackground.visibility = View.VISIBLE
+            textEt.visibility = View.VISIBLE
+            statusTv.visibility = View.INVISIBLE
+            changeFontIcon.visibility = View.VISIBLE
+            changeColorIcon.visibility = View.VISIBLE
+        }
+    }
 
     // Sharing Image via Intent
     private fun shareImage(bitmap: Bitmap) {
