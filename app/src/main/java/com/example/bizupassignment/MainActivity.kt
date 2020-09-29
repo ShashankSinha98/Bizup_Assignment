@@ -29,7 +29,7 @@ import java.lang.Exception
 
 class MainActivity : AppCompatActivity() {
 
-    lateinit var binding : ActivityMainBinding
+    lateinit var binding: ActivityMainBinding
 
     private var listVisible = false
 
@@ -37,7 +37,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        binding = DataBindingUtil.setContentView(this,R.layout.activity_main)
+        binding = DataBindingUtil.setContentView(this, R.layout.activity_main)
         val recyclerView = background_list
 
 
@@ -52,14 +52,25 @@ class MainActivity : AppCompatActivity() {
         }
 
 
-        val list = arrayOf(R.drawable.bg1,R.drawable.bg2,
-            R.drawable.bg3,R.drawable.bg4,R.drawable.bg5, R.drawable.bg6,R.drawable.bg7,R.drawable.bg8,R.drawable.bg9,R.drawable.bg10)
+        val list = arrayOf(
+            R.drawable.bg1,
+            R.drawable.bg2,
+            R.drawable.bg3,
+            R.drawable.bg4,
+            R.drawable.bg5,
+            R.drawable.bg6,
+            R.drawable.bg7,
+            R.drawable.bg8,
+            R.drawable.bg9,
+            R.drawable.bg10
+        )
 
-        var adapter = BackgroundAdapter(list,R.drawable.bg1, object : BackgroundAdapter.BtnClickListener{
-            override fun onBtnClick(position: Int) {
-                binding.backgroundImg.setImageResource(list[position])
-            }
-        })
+        var adapter =
+            BackgroundAdapter(list, R.drawable.bg1, object : BackgroundAdapter.BtnClickListener {
+                override fun onBtnClick(position: Int) {
+                    binding.backgroundImg.setImageResource(list[position])
+                }
+            })
 
         val mLayoutManager = LinearLayoutManager(applicationContext)
         mLayoutManager.orientation = LinearLayoutManager.HORIZONTAL
@@ -68,14 +79,6 @@ class MainActivity : AppCompatActivity() {
         recyclerView.adapter = adapter
         adapter.notifyDataSetChanged()
 
-        /*val viewAdapter = MyAdapter(arrayOf(R.drawable.bg1,R.drawable.bg1,R.drawable.bg1))
-
-        binding.backgroundList.run {
-            setHasFixedSize(true)
-            adapter = viewAdapter
-            Log.i("xlr8_c",viewAdapter.itemCount.toString())
-            invalidate()
-        }*/
 
 
         binding.shareBtn.setOnClickListener {
@@ -90,32 +93,12 @@ class MainActivity : AppCompatActivity() {
 
 
 
-    /*
-    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
-        menuInflater.inflate(R.menu.main_menu,menu)
-        return true
-    }
 
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-
-        when(item.itemId){
-            R.id.add_img -> {
-                Toast.makeText(this,"Add Img",Toast.LENGTH_SHORT).show()
-                return true
-            }
-
-        }
-
-        return super.onOptionsItemSelected(item)
-
-    }
-    */
-
-    private fun generateScreenShot(view : View) {
+    private fun generateScreenShot(view: View) {
 
         // Hide keyboard
         val inm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-        inm.hideSoftInputFromWindow(view.windowToken,0)
+        inm.hideSoftInputFromWindow(view.windowToken, 0)
 
         binding.shareBtn.visibility = View.GONE
 
@@ -130,11 +113,12 @@ class MainActivity : AppCompatActivity() {
             bitmap.compress(
                 Bitmap.CompressFormat.JPEG,
                 100,
-                FileOutputStream(File("mnt/sdcard/MySS.jpg")))
+                FileOutputStream(File("mnt/sdcard/MySS.jpg"))
+            )
 
             shareImage(bitmap)
-        } catch (e :Exception){
-            Log.i("xlr8_txt_err",e.message.toString())
+        } catch (e: Exception) {
+            Timber.i(e.message.toString())
         }
 
         binding.shareBtn.visibility = View.VISIBLE
@@ -145,7 +129,7 @@ class MainActivity : AppCompatActivity() {
 
 
     // Sharing Image via Intent
-    private fun shareImage(bitmap: Bitmap){
+    private fun shareImage(bitmap: Bitmap) {
         try {
 
             // Saving Image
@@ -162,140 +146,24 @@ class MainActivity : AppCompatActivity() {
             e.printStackTrace()
         }
 
-            val imagePath = File(this.cacheDir, "images")
-            val newFile = File(imagePath, "image.png")
-            val contentUri =
-                FileProvider.getUriForFile(
-                    this,
-                    "com.example.bizupassignment.fileprovider",
-                    newFile
-                )
+        val imagePath = File(this.cacheDir, "images")
+        val newFile = File(imagePath, "image.png")
+        val contentUri =
+            FileProvider.getUriForFile(
+                this,
+                "com.example.bizupassignment.fileprovider",
+                newFile
+            )
 
-            if (contentUri != null) {
-                val shareIntent = Intent()
-                shareIntent.action = Intent.ACTION_SEND
-                shareIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION) // temp permission for receiving app to read this file
-                shareIntent.setDataAndType(contentUri, contentResolver.getType(contentUri))
-                shareIntent.putExtra(Intent.EXTRA_STREAM, contentUri)
-                startActivity(Intent.createChooser(shareIntent, "Choose an app"))
-            }
-
-    }
-
-
-    // Generating Image
-    fun generateImage(){
-        //val src = BitmapFactory.decodeResource(resources,R.drawable.bg1)
-
-        var bitmap  = BitmapFactory.decodeResource(resources, R.drawable.bg1)
-        bitmap = getResizedBitmap(bitmap, getScreenWidth(), getScreenHeight())
-
-        val dest : Bitmap = Bitmap.createBitmap(
-            bitmap.width,
-            bitmap.height,
-            Bitmap.Config.ARGB_8888
-        )
-
-
-        Timber.i("img width- ${bitmap.width}, img height- ${bitmap.height} ")
-        Timber.i("phone width - ${getScreenWidth()}, phone height- ${getScreenHeight()}")
-
-        val text  = text_et.text.toString()
-
-        val cs : Canvas = Canvas(dest)
-        val tpaint : Paint = Paint()
-        tpaint.textSize = 35f
-        tpaint.color = Color.WHITE
-        tpaint.style = Paint.Style.FILL
-
-
-
-        cs.drawBitmap(bitmap, 0f, 0f, null)
-        val height = tpaint.measureText("yY")
-        val width = tpaint.measureText(text)
-
-        val xCoord = (bitmap.width - width)/2
-        val yCoord = (bitmap.height - height)/2
-        //cs.drawText(text, xCoord, yCoord, tpaint)
-        Log.i("xlr8_txt", text)
-
-        val strArr = text.split("\\n+".toRegex()).toTypedArray()
-        val txtLen = text.length
-
-        var count = 0
-        strArr.forEach {
-            Log.i("xlr8_txt", it)
-            count+=1
-        }
-
-        Log.i("xlr8_txt", "len : ${txtLen}, new Lines : ${count} ")
-
-        try{
-            shareImage(dest)
-            /*dest.compress(
-                Bitmap.CompressFormat.JPEG,
-                100,
-                FileOutputStream(File("mnt/sdcard/ImageAfterAddingText.jpg"))
-            )*/
-            Toast.makeText(this, "File Saved", Toast.LENGTH_SHORT).show()
-            Timber.i("File Saved")
-
-        } catch (e: FileNotFoundException){
-            Timber.i(e.message.toString())
-            Toast.makeText(this, "Saving Error", Toast.LENGTH_SHORT).show()
-            e.printStackTrace()
+        if (contentUri != null) {
+            val shareIntent = Intent()
+            shareIntent.action = Intent.ACTION_SEND
+            shareIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION) // temp permission for receiving app to read this file
+            shareIntent.setDataAndType(contentUri, contentResolver.getType(contentUri))
+            shareIntent.putExtra(Intent.EXTRA_STREAM, contentUri)
+            startActivity(Intent.createChooser(shareIntent, "Choose an app"))
         }
 
     }
-
-
-    // Getting Device Screen Size
-    private fun getScreenWidth() = Resources.getSystem().displayMetrics.widthPixels
-    private fun getScreenHeight() = Resources.getSystem().displayMetrics.heightPixels
-
-
-    // Resizing Image
-    private fun getResizedBitmap(bm: Bitmap, newWidth: Int, newHeight: Int): Bitmap? {
-        val width = bm.width
-        val height = bm.height
-        val scaleWidth = newWidth.toFloat() / width
-        val scaleHeight = newHeight.toFloat() / height
-        // CREATE A MATRIX FOR THE MANIPULATION
-        val matrix = Matrix()
-        // RESIZE THE BIT MAP
-        matrix.postScale(scaleWidth, scaleHeight)
-
-        // "RECREATE" THE NEW BITMAP
-        val resizedBitmap = Bitmap.createBitmap(
-            bm, 0, 0, width, height, matrix, false
-        )
-        bm.recycle()
-        return resizedBitmap
-    }
-
-
 }
 
-/*
-class MyAdapter(private val myDataSet : Array<Int>):
-    RecyclerView.Adapter<MyAdapter.ViewHolder>(){
-
-    class ViewHolder(val item : View) : RecyclerView.ViewHolder(item)
-
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-        val itemView = LayoutInflater.from(parent.context)
-            .inflate(R.layout.list_view_item,parent,false)
-
-        return ViewHolder(itemView)
-    }
-
-    override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        holder.item.findViewById<ImageView>(R.id.card_img)
-            .setImageResource(list_of_background[position])
-    }
-
-    override fun getItemCount() = myDataSet.size
-}
-
-
-private val list_of_background = listOf(R.drawable.bg1,R.drawable.bg1,R.drawable.bg1)*/
