@@ -26,7 +26,7 @@ import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
 
-const val PROCESS_WAIT: Long = 500
+const val PROCESS_WAIT: Long = 300
 const val STORAGE_REQUEST_CODE = 100
 
 class MainActivity : AppCompatActivity() {
@@ -157,7 +157,9 @@ class MainActivity : AppCompatActivity() {
                     statusTv.visibility = View.VISIBLE
                     statusTv.text = binding.textEt.text?.toString()
                     changeColorIcon.visibility = View.INVISIBLE
+                    shareBtn.isEnabled = false
                     changeFontIcon.visibility = View.INVISIBLE
+
                     invalidateAll()
                 }
                 hideKeyboard(it)
@@ -213,7 +215,6 @@ class MainActivity : AppCompatActivity() {
 
     private fun generateImage(view: View) {
 
-
         binding.shareBtn.visibility = View.GONE
 
         val bitmap = Bitmap.createBitmap(
@@ -242,6 +243,7 @@ class MainActivity : AppCompatActivity() {
             statusTv.visibility = View.INVISIBLE
             changeColorIcon.visibility = View.VISIBLE
             changeFontIcon.visibility = View.VISIBLE
+            shareBtn.isEnabled = true
         }
 
 
@@ -256,6 +258,7 @@ class MainActivity : AppCompatActivity() {
             statusTv.visibility = View.INVISIBLE
             changeFontIcon.visibility = View.VISIBLE
             changeColorIcon.visibility = View.VISIBLE
+            shareBtn.isEnabled = true
         }
     }
 
