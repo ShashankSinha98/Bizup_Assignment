@@ -98,9 +98,9 @@ class MainActivity : AppCompatActivity() {
                 notifyChange()
             }
             DrawableCompat.setTint(
-                binding.changeColorIcon.getDrawable(),
+                binding.changeColorIcon.drawable,
                 ContextCompat.getColor(this, colorSelected)
-            );
+            )
         }
 
         // Change Background Functionality
@@ -121,14 +121,14 @@ class MainActivity : AppCompatActivity() {
             val typeface = ResourcesCompat.getFont(this, fontSelected)
 
             binding.apply {
-                textEt.setTypeface(typeface)
-                statusTv.setTypeface(typeface)
+                textEt.typeface = typeface
+                statusTv.typeface = typeface
                 notifyChange()
             }
         }
 
         // Implemented change background via interface
-        var adapter =
+        val adapter =
             BackgroundAdapter(
                 backgrounds,
                 R.drawable.bg1,
@@ -157,7 +157,7 @@ class MainActivity : AppCompatActivity() {
                     statusTv.visibility = View.VISIBLE
                     statusTv.text = binding.textEt.text?.toString()
                     changeColorIcon.visibility = View.INVISIBLE
-                    shareBtn.isEnabled = false
+                    shareBtn.visibility = View.INVISIBLE
                     changeFontIcon.visibility = View.INVISIBLE
 
                     invalidateAll()
@@ -165,7 +165,7 @@ class MainActivity : AppCompatActivity() {
                 hideKeyboard(it)
                 Toast.makeText(this, "Generating Image... Please Wait.", Toast.LENGTH_SHORT).show()
                 val handler = Handler()
-                handler.postDelayed(Runnable {
+                handler.postDelayed({
                     generateImage(binding.relativeLayout)
                 }, PROCESS_WAIT)
             } else {
@@ -181,7 +181,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    fun hasPermissions(context: Context, permissions: Array<String>): Boolean = permissions.all {
+    private fun hasPermissions(context: Context, permissions: Array<String>): Boolean = permissions.all {
         ActivityCompat.checkSelfPermission(context, it) == PackageManager.PERMISSION_GRANTED
     }
 
@@ -198,7 +198,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    fun Context.hideKeyboard(view: View) {
+    private fun Context.hideKeyboard(view: View) {
         val inputMethodManager =
             getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager
         inputMethodManager.hideSoftInputFromWindow(view.windowToken, 0)
@@ -208,9 +208,9 @@ class MainActivity : AppCompatActivity() {
     override fun onDestroy() {
         super.onDestroy()
         DrawableCompat.setTint(
-            binding.changeColorIcon.getDrawable(),
+            binding.changeColorIcon.drawable,
             ContextCompat.getColor(this, R.color.white)
-        );
+        )
     }
 
     private fun generateImage(view: View) {
@@ -218,8 +218,8 @@ class MainActivity : AppCompatActivity() {
         binding.shareBtn.visibility = View.GONE
 
         val bitmap = Bitmap.createBitmap(
-            view.getWidth(),
-            view.getHeight(), Bitmap.Config.ARGB_8888
+            view.width,
+            view.height, Bitmap.Config.ARGB_8888
         )
         val canvas = Canvas(bitmap)
         view.draw(canvas)
@@ -243,7 +243,7 @@ class MainActivity : AppCompatActivity() {
             statusTv.visibility = View.INVISIBLE
             changeColorIcon.visibility = View.VISIBLE
             changeFontIcon.visibility = View.VISIBLE
-            shareBtn.isEnabled = true
+            shareBtn.visibility = View.VISIBLE
         }
 
 
@@ -258,7 +258,7 @@ class MainActivity : AppCompatActivity() {
             statusTv.visibility = View.INVISIBLE
             changeFontIcon.visibility = View.VISIBLE
             changeColorIcon.visibility = View.VISIBLE
-            shareBtn.isEnabled = true
+            shareBtn.visibility = View.VISIBLE
         }
     }
 
@@ -268,7 +268,7 @@ class MainActivity : AppCompatActivity() {
 
             // Saving Image
 
-            val cachePath: File = File(this.cacheDir, "images")
+            val cachePath = File(this.cacheDir, "images")
             cachePath.mkdirs() // don't forget to make the directory
             val stream =
                 FileOutputStream("$cachePath/image.png") // overwrites this image every time
